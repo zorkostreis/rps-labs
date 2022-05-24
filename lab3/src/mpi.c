@@ -7,10 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define BUFSIZE 1024 // размер буфера 
-#define MAXMES 4 // Максимальное количество отображаемых сообщений
+#define BUFSIZE 1024 // СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° 
+#define MAXMES 4 // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… СЃРѕРѕР±С‰РµРЅРёР№
 
-char* errors[32] = // Статусы подключения
+char* errors[32] = // РЎС‚Р°С‚СѓСЃС‹ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
 {
 	"Connection is successful       \n",
 	"Unable to create socket        \n",
@@ -18,23 +18,23 @@ char* errors[32] = // Статусы подключения
 	"Authentication failed          \n"
 };
 
-// Функция чтения письма с номером i из сокета sock
+// Р¤СѓРЅРєС†РёСЏ С‡С‚РµРЅРёСЏ РїРёСЃСЊРјР° СЃ РЅРѕРјРµСЂРѕРј i РёР· СЃРѕРєРµС‚Р° sock
 void readMail(int sock, int i)
 {
 	int n;
 	char buf[BUFSIZE];
 	int f;
 
-	sprintf(buf, "RETR %d\n", i); // Запрос к серверу дать письмо
+	sprintf(buf, "RETR %d\n", i); // Р—Р°РїСЂРѕСЃ Рє СЃРµСЂРІРµСЂСѓ РґР°С‚СЊ РїРёСЃСЊРјРѕ
 	write(sock, buf, strlen(buf));
 
-	printf("\n\nMessage №%d\n----------------||----------------\n", i); fflush(stdout);
+	printf("\n\nMessage в„–%d\n----------------||----------------\n", i); fflush(stdout);
 
 	do {
-		n = recv(sock, buf, BUFSIZE, 0); // Запись части сообщения в buf
-		f = memcmp("\r\n.\r\n", buf + n - 5, 5); // Ожидание конца сообщения
-		write(1, buf, n); // Вывод содержимого buf 
-	} while (f); // Приём завершается по CRLF.CRLF
+		n = recv(sock, buf, BUFSIZE, 0); // Р—Р°РїРёСЃСЊ С‡Р°СЃС‚Рё СЃРѕРѕР±С‰РµРЅРёСЏ РІ buf
+		f = memcmp("\r\n.\r\n", buf + n - 5, 5); // РћР¶РёРґР°РЅРёРµ РєРѕРЅС†Р° СЃРѕРѕР±С‰РµРЅРёСЏ
+		write(1, buf, n); // Р’С‹РІРѕРґ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ buf 
+	} while (f); // РџСЂРёС‘Рј Р·Р°РІРµСЂС€Р°РµС‚СЃСЏ РїРѕ CRLF.CRLF
 
 	write(1, "\n----------------||----------------\n\n", 38);
 }
@@ -46,45 +46,45 @@ int initMail(int* sock, char* confFile)
 	int n;
 	char buf[BUFSIZE];
 	FILE* fd;
-	char servn[32], usern[32], passn[32]; // Имя сервера, логин и пароль
+	char servn[32], usern[32], passn[32]; // РРјСЏ СЃРµСЂРІРµСЂР°, Р»РѕРіРёРЅ Рё РїР°СЂРѕР»СЊ
 
-	fd = fopen(confFile, "r"); // Файл с именем сервера, логином и паролем
+	fd = fopen(confFile, "r"); // Р¤Р°Р№Р» СЃ РёРјРµРЅРµРј СЃРµСЂРІРµСЂР°, Р»РѕРіРёРЅРѕРј Рё РїР°СЂРѕР»РµРј
 	fscanf(fd, "%s\n%s\n%s", servn, usern, passn);
 	fclose(fd);
 
-	// Инициализация TCP интернет-сокета 
+	// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ TCP РёРЅС‚РµСЂРЅРµС‚-СЃРѕРєРµС‚Р° 
 	if ((*sock = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 		return 1;
 
-	// Заполнение структуры ssin 
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ ssin 
 	memset((char*)&ssin, '\0', sizeof(ssin));
 	ssin.sin_family = AF_INET;
-	hp = gethostbyname(servn); // Разрешение доменного имени 
+	hp = gethostbyname(servn); // Р Р°Р·СЂРµС€РµРЅРёРµ РґРѕРјРµРЅРЅРѕРіРѕ РёРјРµРЅРё 
 	memcpy((char*)&ssin.sin_addr, hp->h_addr, hp->h_length);
-	ssin.sin_port = htons(110); // 110ый номер порта преобразуется в необходимый формат
+	ssin.sin_port = htons(110); // 110С‹Р№ РЅРѕРјРµСЂ РїРѕСЂС‚Р° РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ РЅРµРѕР±С…РѕРґРёРјС‹Р№ С„РѕСЂРјР°С‚
 
-	// Заполнение структуры csin 
+	// Р—Р°РїРѕР»РЅРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ csin 
 	memset((char*)&csin, '\0', sizeof(csin));
 	csin.sin_family = AF_INET;
-	csin.sin_port = htons(12524);  // Произвольный порт
+	csin.sin_port = htons(12524);  // РџСЂРѕРёР·РІРѕР»СЊРЅС‹Р№ РїРѕСЂС‚
 
-	// Привязка csin к сокету 
+	// РџСЂРёРІСЏР·РєР° csin Рє СЃРѕРєРµС‚Сѓ 
 	bind(*sock, (struct sockaddr*)&csin, sizeof(csin));
 
-	// Подключение к серверу по сокету 
+	// РџРѕРґРєР»СЋС‡РµРЅРёРµ Рє СЃРµСЂРІРµСЂСѓ РїРѕ СЃРѕРєРµС‚Сѓ 
 	if (connect(*sock, (struct sockaddr*)&ssin, sizeof(ssin)) == -1)
 		return 2;
 
 	buf[0] = 0;
-	n = read(*sock, buf, BUFSIZE); // Ожидание ответа от сервера 
+	n = read(*sock, buf, BUFSIZE); // РћР¶РёРґР°РЅРёРµ РѕС‚РІРµС‚Р° РѕС‚ СЃРµСЂРІРµСЂР° 
 
-	// Отправка логина 
+	// РћС‚РїСЂР°РІРєР° Р»РѕРіРёРЅР° 
 	sprintf(buf, "USER %s\n", usern);
 	write(*sock, buf, strlen(buf));
 	n = read(*sock, buf, BUFSIZE);
-	if (buf[0] == '-') return 3; // Неудача
+	if (buf[0] == '-') return 3; // РќРµСѓРґР°С‡Р°
 
-	// Отправка пароля 
+	// РћС‚РїСЂР°РІРєР° РїР°СЂРѕР»СЏ 
 	sprintf(buf, "PASS %s\n", passn);
 	write(*sock, buf, strlen(buf));
 	n = read(*sock, buf, BUFSIZE);
@@ -93,13 +93,13 @@ int initMail(int* sock, char* confFile)
 	return 0;
 }
 
-// Получение количества сообщений в ящике
+// РџРѕР»СѓС‡РµРЅРёРµ РєРѕР»РёС‡РµСЃС‚РІР° СЃРѕРѕР±С‰РµРЅРёР№ РІ СЏС‰РёРєРµ
 int getCntM(int sock)
 {
 	int n;
 	char buf[BUFSIZE];
 
-	write(sock, "STAT\n", 5); // Команда для получения кол-ва сообщений
+	write(sock, "STAT\n", 5); // РљРѕРјР°РЅРґР° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РєРѕР»-РІР° СЃРѕРѕР±С‰РµРЅРёР№
 	n = read(sock, buf, BUFSIZE);
 	sscanf(buf + 3, "%d", &n);
 	return n;
@@ -108,21 +108,21 @@ int getCntM(int sock)
 int main(int argc, char** argv) {
 	char buf[BUFSIZE];
 	int n;
-	int sock; // Дескриптор сокета 
+	int sock; // Р”РµСЃРєСЂРёРїС‚РѕСЂ СЃРѕРєРµС‚Р° 
 
-	if (argc < 2) { // Если не передано имя файла в аргументах программы
+	if (argc < 2) { // Р•СЃР»Рё РЅРµ РїРµСЂРµРґР°РЅРѕ РёРјСЏ С„Р°Р№Р»Р° РІ Р°СЂРіСѓРјРµРЅС‚Р°С… РїСЂРѕРіСЂР°РјРјС‹
 		write(1, "Missing argument 'config_file_name.cfg'\n", 40);
 		return -1;
 	}
 
 	n = initMail(&sock, argv[1]);
-	write(1, errors[n], 32); // Вывод статуса подключения
-	if (!n) { // Если было успешное подключение 
+	write(1, errors[n], 32); // Р’С‹РІРѕРґ СЃС‚Р°С‚СѓСЃР° РїРѕРґРєР»СЋС‡РµРЅРёСЏ
+	if (!n) { // Р•СЃР»Рё Р±С‹Р»Рѕ СѓСЃРїРµС€РЅРѕРµ РїРѕРґРєР»СЋС‡РµРЅРёРµ 
 		n = getCntM(sock);
-		for (int i = 0; i < n && i < MAXMES; ++i) // Чтение n писем не больше MAXMES
+		for (int i = 0; i < n && i < MAXMES; ++i) // Р§С‚РµРЅРёРµ n РїРёСЃРµРј РЅРµ Р±РѕР»СЊС€Рµ MAXMES
 			readMail(sock, i + 1);
 	}
-	write(sock, "QUIT\n", 5); // Сообщение серверу о выходе 
-	shutdown(sock, 2);  // Обязательное отключение и закрытие сокета 
+	write(sock, "QUIT\n", 5); // РЎРѕРѕР±С‰РµРЅРёРµ СЃРµСЂРІРµСЂСѓ Рѕ РІС‹С…РѕРґРµ 
+	shutdown(sock, 2);  // РћР±СЏР·Р°С‚РµР»СЊРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ Рё Р·Р°РєСЂС‹С‚РёРµ СЃРѕРєРµС‚Р° 
 	close(sock);
 }
